@@ -10,6 +10,13 @@ A fun, colorful website for Elizabeth's pretend company selling handmade squishy
   - Shopping cart functionality
   - Pretend checkout process
   - Custom squish request form
+- **Admin panel** for business management:
+  - Secure login system
+  - View all customer orders
+  - Track order status (pending/fulfilled)
+  - Business statistics dashboard
+  - Manage and delete orders
+  - Persistent order storage using localStorage
 - **Responsive design** that works on mobile, tablet, and desktop
 - **Accessibility features** including ARIA labels and keyboard navigation
 - **Playful animations** with cute duck mascots
