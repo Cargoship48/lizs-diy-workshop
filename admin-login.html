@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Login - Liz's DIY Workshop</title>
+  <meta name="description" content="Admin login for Liz's DIY Workshop">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- Floating background decorations -->
+  <div class="sky-dot a"></div>
+  <div class="sky-dot b"></div>
+  <div class="sky-dot c"></div>
+
+  <!-- Navigation -->
+  <header class="topbar">
+    <a href="index.html" class="brand" aria-label="Go to home">
+      <svg viewBox="0 0 120 120" aria-hidden="true">
+        <ellipse cx="56" cy="78" rx="42" ry="30" fill="#FFD15C"/>
+        <circle cx="82" cy="46" r="23" fill="#FFD15C"/>
+        <path d="M101 42 q20 1 18 12 q-2 9 -18 7 q-4 -10 0 -19 z" fill="#FF9E4D"/>
+        <circle cx="86" cy="40" r="4.5" fill="#4A3B6B"/>
+        <circle cx="87.5" cy="38.5" r="1.6" fill="#fff"/>
+        <path d="M40 70 q22 18 46 6" fill="none" stroke="#F2B83E" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+      <span class="brand-name">Liz's DIY Workshop</span>
+    </a>
+
+    <div class="nav-wrap">
+      <nav class="nav">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="about.html" class="nav-link">About Me</a>
+        <a href="shop.html" class="nav-link">Shop</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Login Form -->
+    <div class="panel" style="max-width: 480px; margin: 60px auto;">
+      <h2 class="section-title" style="text-align: center;">Admin Login</h2>
+      <p class="section-sub" style="text-align: center;">Enter your credentials to access the admin panel</p>
+
+      <form id="login-form" onsubmit="handleLogin(event)">
+        <div class="form-grid" style="grid-template-columns: 1fr;">
+          <div class="field">
+            <label for="username">Username</label>
+            <input id="username" type="text" placeholder="Admin" required autocomplete="username">
+          </div>
+          <div class="field">
+            <label for="password">Password</label>
+            <input id="password" type="password" placeholder="Enter password" required autocomplete="current-password">
+          </div>
+        </div>
+
+        <div id="error-message" style="color: #ff6b6b; margin: 12px 0; text-align: center; display: none;"></div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-main btn-block">Login</button>
+        </div>
+      </form>
+
+      <div style="margin-top: 24px; padding: 16px; background: var(--bg); border-radius: 14px; text-align: center;">
+        <p style="margin: 0; font-size: 0.9rem; color: var(--ink-soft);">
+          <strong>Demo Credentials:</strong><br>
+          Username: <code>Admin</code><br>
+          Password: <code>Liz123</code>
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    Made with love by Elizabeth <span class="heart">&#9829;</span> (and a few ducks)
+  </footer>
+
+  <script>
+    function handleLogin(event) {
+      event.preventDefault();
+
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const errorMsg = document.getElementById('error-message');
+
+      if (username === 'Admin' && password === 'Liz123') {
+        // Set logged in session
+        sessionStorage.setItem('adminLoggedIn', 'true');
+        // Redirect to admin panel
+        window.location.href = 'admin.html';
+      } else {
+        errorMsg.textContent = 'Invalid username or password. Please try again.';
+        errorMsg.style.display = 'block';
+        document.getElementById('password').value = '';
+      }
+    }
+  </script>
+</body>
+</html>

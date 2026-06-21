@@ -198,6 +198,9 @@ function checkout() {
   const total = cartTotal();
   const firstName = name.split(' ')[0];
 
+  // Save order to localStorage
+  saveOrder(name, cart, total);
+
   for (const k in cart) delete cart[k];
   updateBadge();
 
@@ -219,6 +222,27 @@ function checkout() {
       <button class="btn btn-main" onclick="closeCart()">Yay!</button>
     </div>
   `;
+}
+
+// Save order to localStorage for admin panel
+function saveOrder(customerName, orderCart, total) {
+  const orders = JSON.parse(localStorage.getItem('squishOrders') || '[]');
+
+  const order = {
+    id: Date.now(),
+    customerName: customerName,
+    items: Object.keys(orderCart).map(i => ({
+      name: squishes[i].name,
+      quantity: orderCart[i],
+      price: squishes[i].price
+    })),
+    total: total,
+    date: new Date().toISOString(),
+    status: 'pending'
+  };
+
+  orders.push(order);
+  localStorage.setItem('squishOrders', JSON.stringify(orders));
 }
 
 // Custom request form

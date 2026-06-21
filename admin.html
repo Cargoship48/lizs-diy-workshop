@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Panel - Liz's DIY Workshop</title>
+  <meta name="description" content="Admin panel for managing Liz's DIY Workshop orders">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css">
+
+  <style>
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--bg);
+      border-radius: 18px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--purple-deep);
+      font-family: "Fredoka", sans-serif;
+    }
+
+    .stat-label {
+      font-size: 0.95rem;
+      color: var(--ink-soft);
+      margin-top: 4px;
+    }
+
+    .order-card {
+      background: var(--bg);
+      border-radius: 18px;
+      padding: 20px;
+      margin-bottom: 16px;
+      border: 2px solid transparent;
+      transition: border-color 0.2s;
+    }
+
+    .order-card.pending {
+      border-left: 4px solid var(--duck);
+    }
+
+    .order-card.fulfilled {
+      border-left: 4px solid var(--mint);
+      opacity: 0.7;
+    }
+
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .order-info h3 {
+      margin: 0 0 4px;
+      color: var(--purple-deep);
+      font-size: 1.25rem;
+    }
+
+    .order-meta {
+      font-size: 0.9rem;
+      color: var(--ink-soft);
+    }
+
+    .order-status {
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .order-status.pending {
+      background: var(--duck);
+      color: #5a3d0e;
+    }
+
+    .order-status.fulfilled {
+      background: var(--mint);
+      color: #1a5a3a;
+    }
+
+    .order-items {
+      margin: 16px 0;
+      padding: 12px;
+      background: #fff;
+      border-radius: 12px;
+    }
+
+    .order-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .order-item:last-child {
+      border-bottom: none;
+    }
+
+    .order-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 2px solid var(--line);
+      font-weight: 700;
+      font-size: 1.15rem;
+    }
+
+    .order-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .btn-small {
+      padding: 8px 18px;
+      font-size: 0.9rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--ink-soft);
+    }
+
+    .empty-state svg {
+      width: 120px;
+      height: 120px;
+      opacity: 0.6;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Floating background decorations -->
+  <div class="sky-dot a"></div>
+  <div class="sky-dot b"></div>
+  <div class="sky-dot c"></div>
+
+  <!-- Navigation -->
+  <header class="topbar">
+    <a href="index.html" class="brand" aria-label="Go to home">
+      <svg viewBox="0 0 120 120" aria-hidden="true">
+        <ellipse cx="56" cy="78" rx="42" ry="30" fill="#FFD15C"/>
+        <circle cx="82" cy="46" r="23" fill="#FFD15C"/>
+        <path d="M101 42 q20 1 18 12 q-2 9 -18 7 q-4 -10 0 -19 z" fill="#FF9E4D"/>
+        <circle cx="86" cy="40" r="4.5" fill="#4A3B6B"/>
+        <circle cx="87.5" cy="38.5" r="1.6" fill="#fff"/>
+        <path d="M40 70 q22 18 46 6" fill="none" stroke="#F2B83E" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+      <span class="brand-name">Liz's DIY Workshop - Admin</span>
+    </a>
+
+    <div class="nav-wrap">
+      <button class="btn btn-ghost btn-small" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Statistics -->
+    <div class="panel">
+      <div class="admin-header">
+        <div>
+          <h2 class="section-title">Dashboard</h2>
+          <p class="section-sub">Business overview and statistics</p>
+        </div>
+      </div>
+
+      <div class="stats-grid" id="stats-grid">
+        <!-- Stats will be populated by JavaScript -->
+      </div>
+    </div>
+
+    <!-- Orders -->
+    <div class="panel">
+      <div class="admin-header">
+        <div>
+          <h2 class="section-title">Orders</h2>
+          <p class="section-sub">Manage customer orders</p>
+        </div>
+        <button class="btn btn-ghost btn-small" onclick="clearAllOrders()">Clear All Orders</button>
+      </div>
+
+      <div id="orders-container">
+        <!-- Orders will be populated by JavaScript -->
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    Made with love by Elizabeth <span class="heart">&#9829;</span> (and a few ducks)
+  </footer>
+
+  <script>
+    // Check if user is logged in
+    if (sessionStorage.getItem('adminLoggedIn') !== 'true') {
+      window.location.href = 'admin-login.html';
+    }
+
+    function logout() {
+      sessionStorage.removeItem('adminLoggedIn');
+      window.location.href = 'admin-login.html';
+    }
+
+    function loadOrders() {
+      const orders = JSON.parse(localStorage.getItem('squishOrders') || '[]');
+      return orders.sort((a, b) => b.id - a.id); // Newest first
+    }
+
+    function updateStats() {
+      const orders = loadOrders();
+      const pendingOrders = orders.filter(o => o.status === 'pending');
+      const fulfilledOrders = orders.filter(o => o.status === 'fulfilled');
+      const totalSales = orders.reduce((sum, o) => sum + o.total, 0);
+
+      // Count most popular squish
+      const squishCount = {};
+      orders.forEach(order => {
+        order.items.forEach(item => {
+          squishCount[item.name] = (squishCount[item.name] || 0) + item.quantity;
+        });
+      });
+      const mostPopular = Object.keys(squishCount).length > 0
+        ? Object.entries(squishCount).sort((a, b) => b[1] - a[1])[0][0]
+        : 'None yet';
+
+      document.getElementById('stats-grid').innerHTML = `
+        <div class="stat-card">
+          <div class="stat-value">${orders.length}</div>
+          <div class="stat-label">Total Orders</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${pendingOrders.length}</div>
+          <div class="stat-label">Pending Orders</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">$${totalSales}</div>
+          <div class="stat-label">Total Sales</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="font-size: 1.3rem;">${mostPopular}</div>
+          <div class="stat-label">Most Popular</div>
+        </div>
+      `;
+    }
+
+    function renderOrders() {
+      const orders = loadOrders();
+      const container = document.getElementById('orders-container');
+
+      if (orders.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <ellipse cx="56" cy="78" rx="42" ry="30" fill="#FFD15C"/>
+              <circle cx="82" cy="46" r="23" fill="#FFD15C"/>
+              <path d="M101 42 q20 1 18 12 q-2 9 -18 7 q-4 -10 0 -19 z" fill="#FF9E4D"/>
+              <circle cx="86" cy="40" r="4.5" fill="#4A3B6B"/>
+            </svg>
+            <h3>No orders yet</h3>
+            <p>Orders will appear here when customers make purchases.</p>
+            <a href="shop.html" class="btn btn-main" style="margin-top: 16px;">Go to Shop</a>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = orders.map(order => {
+        const date = new Date(order.date);
+        const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+
+        const itemsList = order.items.map(item => `
+          <div class="order-item">
+            <span>${item.quantity}x ${item.name}</span>
+            <span>$${item.price * item.quantity}</span>
+          </div>
+        `).join('');
+
+        return `
+          <div class="order-card ${order.status}">
+            <div class="order-header">
+              <div class="order-info">
+                <h3>${order.customerName}</h3>
+                <div class="order-meta">Order #${order.id} • ${dateStr}</div>
+              </div>
+              <span class="order-status ${order.status}">${order.status}</span>
+            </div>
+
+            <div class="order-items">
+              ${itemsList}
+              <div class="order-total">
+                <span>Total</span>
+                <span>$${order.total}</span>
+              </div>
+            </div>
+
+            <div class="order-actions">
+              ${order.status === 'pending'
+                ? `<button class="btn btn-main btn-small" onclick="markFulfilled(${order.id})">Mark as Fulfilled</button>`
+                : `<button class="btn btn-ghost btn-small" onclick="markPending(${order.id})">Mark as Pending</button>`
+              }
+              <button class="btn btn-ghost btn-small" onclick="deleteOrder(${order.id})">Delete</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function markFulfilled(orderId) {
+      const orders = loadOrders();
+      const order = orders.find(o => o.id === orderId);
+      if (order) {
+        order.status = 'fulfilled';
+        localStorage.setItem('squishOrders', JSON.stringify(orders));
+        updateStats();
+        renderOrders();
+      }
+    }
+
+    function markPending(orderId) {
+      const orders = loadOrders();
+      const order = orders.find(o => o.id === orderId);
+      if (order) {
+        order.status = 'pending';
+        localStorage.setItem('squishOrders', JSON.stringify(orders));
+        updateStats();
+        renderOrders();
+      }
+    }
+
+    function deleteOrder(orderId) {
+      if (!confirm('Are you sure you want to delete this order?')) return;
+
+      const orders = loadOrders();
+      const filtered = orders.filter(o => o.id !== orderId);
+      localStorage.setItem('squishOrders', JSON.stringify(filtered));
+      updateStats();
+      renderOrders();
+    }
+
+    function clearAllOrders() {
+      if (!confirm('Are you sure you want to delete ALL orders? This cannot be undone!')) return;
+
+      localStorage.removeItem('squishOrders');
+      updateStats();
+      renderOrders();
+    }
+
+    // Initialize
+    updateStats();
+    renderOrders();
+  </script>
+</body>
+</html>
