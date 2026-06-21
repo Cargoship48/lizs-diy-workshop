@@ -45,12 +45,12 @@
 
   <main>
     <!-- Login Form -->
-    <div class="panel" style="max-width: 480px; margin: 60px auto;">
-      <h2 class="section-title" style="text-align: center;">Admin Login</h2>
-      <p class="section-sub" style="text-align: center;">Enter your credentials to access the admin panel</p>
+    <div class="panel login-panel">
+      <h2 class="section-title login-title">Admin Login</h2>
+      <p class="section-sub login-title">Enter your credentials to access the admin panel</p>
 
       <form id="login-form" onsubmit="handleLogin(event)">
-        <div class="form-grid" style="grid-template-columns: 1fr;">
+        <div class="form-grid form-single-column">
           <div class="field">
             <label for="username">Username</label>
             <input id="username" type="text" placeholder="Admin" required autocomplete="username">
@@ -61,30 +61,23 @@
           </div>
         </div>
 
-        <div id="error-message" style="color: #ff6b6b; margin: 12px 0; text-align: center; display: none;"></div>
+        <div id="error-message" class="error-message"></div>
 
         <div class="form-actions">
           <button type="submit" class="btn btn-main btn-block">Login</button>
         </div>
       </form>
 
-      <div class="credentials-hint" style="margin-top: 24px; padding: 16px; background: var(--bg); border-radius: 14px; text-align: center; position: relative; cursor: help;">
-        <p style="margin: 0; font-size: 0.9rem; color: var(--ink-soft);">
+      <div class="credentials-hint">
+        <p>
           <strong>Need help?</strong> Hover here for demo credentials
         </p>
-        <div class="credentials-reveal" style="position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 8px; padding: 16px; background: var(--purple-deep); color: #fff; border-radius: 14px; box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: opacity 0.3s; white-space: nowrap; z-index: 10;">
+        <div class="credentials-reveal">
           <strong>Demo Credentials:</strong><br>
-          Username: <code style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px;">Admin</code><br>
-          Password: <code style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px;">Liz123</code>
+          Username: <code>Admin</code><br>
+          Password: <code>Liz123</code>
         </div>
       </div>
-
-      <style>
-        .credentials-hint:hover .credentials-reveal {
-          opacity: 1;
-          pointer-events: auto;
-        }
-      </style>
     </div>
   </main>
 
@@ -93,6 +86,22 @@
   </footer>
 
   <script>
+    /*
+     * SECURITY NOTICE - FOR LEARNING/DEMO PURPOSES ONLY
+     *
+     * This authentication is NOT secure and should NEVER be used in production:
+     * - Credentials are hardcoded in client-side JavaScript (anyone can see them)
+     * - sessionStorage can be manipulated via browser console
+     * - No encryption, no token validation, no server verification
+     *
+     * For real applications, use:
+     * - Server-side authentication (Node.js, Python, etc.)
+     * - Secure token systems (JWT, OAuth)
+     * - Environment variables for secrets
+     * - HTTPS for encrypted communication
+     * - Password hashing (bcrypt, Argon2)
+     */
+
     function handleLogin(event) {
       event.preventDefault();
 
@@ -100,8 +109,9 @@
       const password = document.getElementById('password').value;
       const errorMsg = document.getElementById('error-message');
 
+      // Demo credentials (hardcoded for learning purposes only)
       if (username === 'Admin' && password === 'Liz123') {
-        // Set logged in session
+        // Set logged in session (not secure - anyone can set this)
         sessionStorage.setItem('adminLoggedIn', 'true');
         // Redirect to admin panel
         window.location.href = 'admin.html';

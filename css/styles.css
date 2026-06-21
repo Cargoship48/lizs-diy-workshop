@@ -842,6 +842,79 @@ footer .heart {
   }
 }
 
+/* Admin button styling */
+.btn-admin {
+  padding: 9px 18px;
+  font-size: 0.9rem;
+}
+
+/* Admin login page */
+.login-panel {
+  max-width: 480px;
+  margin: 60px auto;
+}
+
+.login-title {
+  text-align: center;
+}
+
+.credentials-hint {
+  margin-top: 24px;
+  padding: 16px;
+  background: var(--bg);
+  border-radius: 14px;
+  text-align: center;
+  position: relative;
+  cursor: help;
+}
+
+.credentials-hint p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
+
+.credentials-reveal {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 8px;
+  padding: 16px;
+  background: var(--purple-deep);
+  color: #fff;
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.credentials-reveal code {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.credentials-hint:hover .credentials-reveal {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.error-message {
+  color: #ff6b6b;
+  margin: 12px 0;
+  text-align: center;
+  display: none;
+}
+
+/* Single column form layout */
+.form-single-column {
+  grid-template-columns: 1fr;
+}
+
 /* Reduce motion for accessibility */
 @media (prefers-reduced-motion: reduce) {
   *, .float, .squish-poke svg, .sky-dot, .wiggle {
