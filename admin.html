@@ -235,6 +235,15 @@
       return orders.sort((a, b) => b.id - a.id); // Newest first
     }
 
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
     function updateStats() {
       const orders = loadOrders();
       const pendingOrders = orders.filter(o => o.status === 'pending');
@@ -304,39 +313,43 @@
 
       container.innerHTML = orders.map(order => {
         const date = new Date(order.date);
-        const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        const dateStr = escapeHtml(date.toLocaleDateString() + ' ' + date.toLocaleTimeString());
+        const safeStatus = order.status === 'fulfilled' ? 'fulfilled' : 'pending';
+        const safeOrderId = Number(order.id) || 0;
+        const safeCustomerName = escapeHtml(order.customerName);
+        const safeTotal = escapeHtml(order.total);
 
         const itemsList = order.items.map(item => `
           <div class="order-item">
-            <span>${item.quantity}x ${item.name}</span>
-            <span>$${item.price * item.quantity}</span>
+            <span>${escapeHtml(item.quantity)}x ${escapeHtml(item.name)}</span>
+            <span>$${escapeHtml(item.price * item.quantity)}</span>
           </div>
         `).join('');
 
         return `
-          <div class="order-card ${order.status}">
+          <div class="order-card ${safeStatus}">
             <div class="order-header">
               <div class="order-info">
-                <h3>${order.customerName}</h3>
-                <div class="order-meta">Order #${order.id} • ${dateStr}</div>
+                <h3>${safeCustomerName}</h3>
+                <div class="order-meta">Order #${safeOrderId} • ${dateStr}</div>
               </div>
-              <span class="order-status ${order.status}">${order.status}</span>
+              <span class="order-status ${safeStatus}">${safeStatus}</span>
             </div>
 
             <div class="order-items">
               ${itemsList}
               <div class="order-total">
                 <span>Total</span>
-                <span>$${order.total}</span>
+                <span>$${safeTotal}</span>
               </div>
             </div>
 
             <div class="order-actions">
-              ${order.status === 'pending'
-                ? `<button class="btn btn-main btn-small" onclick="markFulfilled(${order.id})">Mark as Fulfilled</button>`
-                : `<button class="btn btn-ghost btn-small" onclick="markPending(${order.id})">Mark as Pending</button>`
+              ${safeStatus === 'pending'
+                ? `<button class="btn btn-main btn-small" onclick="markFulfilled(${safeOrderId})">Mark as Fulfilled</button>`
+                : `<button class="btn btn-ghost btn-small" onclick="markPending(${safeOrderId})">Mark as Pending</button>`
               }
-              <button class="btn btn-ghost btn-small" onclick="deleteOrder(${order.id})">Delete</button>
+              <button class="btn btn-ghost btn-small" onclick="deleteOrder(${safeOrderId})">Delete</button>
             </div>
           </div>
         `;
