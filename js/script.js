@@ -1,4 +1,4 @@
-// Squishes product data
+// Product catalog for the shop
 const squishes = [
   { name: "Bubblegum", price: 10, color: "#FFB3D9", color2: "#FFD6EC", mouth: "smile", blurb: "Pink, poppy, and proud." },
   { name: "Grape Goo", price: 20, color: "#B79CED", color2: "#D9C9FF", mouth: "smile", blurb: "Squishy purple fun." },
@@ -9,15 +9,21 @@ const squishes = [
   { name: "Mega Squish", price: 100, color: "#C77DFF", color2: "#E9C6FF", mouth: "smile", blurb: "The biggest, squishiest one of all!" }
 ];
 
-// Build squish SVG
+// Small helpers
+function getEl(id) {
+  return document.getElementById(id);
+}
+
+// Build a squish SVG blob
 function squishSVG(s) {
-  let mouth;
+  let mouthMarkup;
+
   if (s.mouth === "o") {
-    mouth = '<ellipse cx="110" cy="146" rx="9" ry="11" fill="#4A3B6B"/>';
+    mouthMarkup = '<ellipse cx="110" cy="146" rx="9" ry="11" fill="#4A3B6B"/>';
   } else if (s.mouth === "content") {
-    mouth = '<path d="M92 142 Q110 152 128 142" fill="none" stroke="#4A3B6B" stroke-width="5" stroke-linecap="round"/>';
+    mouthMarkup = '<path d="M92 142 Q110 152 128 142" fill="none" stroke="#4A3B6B" stroke-width="5" stroke-linecap="round"/>';
   } else {
-    mouth = '<path d="M90 140 Q110 166 130 140" fill="none" stroke="#4A3B6B" stroke-width="5.5" stroke-linecap="round"/>';
+    mouthMarkup = '<path d="M90 140 Q110 166 130 140" fill="none" stroke="#4A3B6B" stroke-width="5.5" stroke-linecap="round"/>';
   }
 
   return `
@@ -30,14 +36,33 @@ function squishSVG(s) {
       <circle cx="137" cy="106" r="3.2" fill="#fff"/>
       <circle cx="68" cy="132" r="9" fill="#FF8FC2" opacity="0.5"/>
       <circle cx="152" cy="132" r="9" fill="#FF8FC2" opacity="0.5"/>
-      ${mouth}
+      ${mouthMarkup}
     </svg>
   `;
 }
 
-// Build shop grid
+// ----------------------
+// Shop grid + cart state
+// ----------------------
+const cart = {};
+
+function cartCount() {
+  return Object.values(cart).reduce((a, b) => a + b, 0);
+}
+
+function cartTotal() {
+  return Object.keys(cart).reduce((sum, i) => sum + squishes[i].price * cart[i], 0);
+}
+
+function updateBadge() {
+  const badge = getEl('cart-count');
+  if (badge) {
+    badge.textContent = cartCount();
+  }
+}
+
 function buildShop() {
-  const grid = document.getElementById('shop-grid');
+  const grid = getEl('shop-grid');
   if (!grid) return;
 
   grid.innerHTML = squishes.map((s, i) => `
@@ -54,22 +79,6 @@ function buildShop() {
   `).join('');
 }
 
-// Cart state
-const cart = {};
-
-function cartCount() {
-  return Object.values(cart).reduce((a, b) => a + b, 0);
-}
-
-function cartTotal() {
-  return Object.keys(cart).reduce((sum, i) => sum + squishes[i].price * cart[i], 0);
-}
-
-function updateBadge() {
-  const badge = document.getElementById('cart-count');
-  if (badge) badge.textContent = cartCount();
-}
-
 function addToCart(i) {
   cart[i] = (cart[i] || 0) + 1;
   updateBadge();
@@ -78,7 +87,9 @@ function addToCart(i) {
 
 function changeQty(i, delta) {
   cart[i] = (cart[i] || 0) + delta;
-  if (cart[i] <= 0) delete cart[i];
+  if (cart[i] <= 0) {
+    delete cart[i];
+  }
   updateBadge();
   renderCart();
 }
@@ -89,23 +100,39 @@ function removeLine(i) {
   renderCart();
 }
 
-// Cart modal
+// ----------------------
+// Cart modal + checkout
+// ----------------------
 function openCart() {
-  document.getElementById('overlay').classList.add('open');
-  document.getElementById('modal-title').textContent = 'Your Cart';
+  const overlay = getEl('overlay');
+  if (!overlay) return;
+
+  overlay.classList.add('open');
+
+  const titleEl = getEl('modal-title');
+  if (titleEl) {
+    titleEl.textContent = 'Your Cart';
+  }
+
   renderCart();
 }
 
 function closeCart() {
-  document.getElementById('overlay').classList.remove('open');
+  const overlay = getEl('overlay');
+  if (!overlay) return;
+  overlay.classList.remove('open');
 }
 
 function overlayClick(e) {
-  if (e.target.id === 'overlay') closeCart();
+  if (e.target.id === 'overlay') {
+    closeCart();
+  }
 }
 
 function renderCart() {
-  const body = document.getElementById('modal-body');
+  const body = getEl('modal-body');
+  if (!body) return;
+
   const keys = Object.keys(cart);
 
   if (keys.length === 0) {
@@ -126,6 +153,7 @@ function renderCart() {
 
   const lines = keys.map(i => {
     const s = squishes[i];
+    const qty = cart[i];
     return `
       <div class="cart-line">
         <div class="mini">${squishSVG(s)}</div>
@@ -135,7 +163,7 @@ function renderCart() {
         </div>
         <div class="qty">
           <button onclick="changeQty(${i}, -1)" aria-label="One less">&minus;</button>
-          <span>${cart[i]}</span>
+          <span>${qty}</span>
           <button onclick="changeQty(${i}, 1)" aria-label="One more">+</button>
         </div>
         <button class="line-remove" onclick="removeLine(${i})">remove</button>
@@ -144,9 +172,30 @@ function renderCart() {
   }).join('');
 
   body.innerHTML = `
-    ${lines}
-    <div class="cart-total"><span>Total</span><span class="amt">$${cartTotal()}</span></div>
-    <div class="pretend-note">This is a pretend store just for fun. You can type any made-up card number, and no real payment happens.</div>
+    <div class="cart-lines">
+      ${lines}
+    </div>
+    <div class="cart-total">
+      <div>Total</div>
+      <div class="total-amount">$${cartTotal()}</div>
+    </div>
+    <div class="cart-actions">
+      <button class="btn btn-ghost" onclick="closeCart()">Keep shopping</button>
+      <button class="btn btn-main" onclick="startCheckout()">Pretend checkout</button>
+    </div>
+  `;
+}
+
+function startCheckout() {
+  const body = getEl('modal-body');
+  if (!body) return;
+
+  const titleEl = getEl('modal-title');
+  if (titleEl) {
+    titleEl.textContent = 'Checkout';
+  }
+
+  body.innerHTML = `
     <h3 class="checkout-title">Checkout</h3>
     <div class="form-grid">
       <div class="field wide">
@@ -172,7 +221,7 @@ function renderCart() {
   `;
 }
 
-// Input formatting
+// Input formatting helpers
 function formatCard(el) {
   let v = el.value.replace(/\D/g, '').slice(0, 16);
   el.value = v.replace(/(.{4})/g, '$1 ').trim();
@@ -183,12 +232,12 @@ function formatExp(el) {
   el.value = v.length > 2 ? v.slice(0, 2) + '/' + v.slice(2) : v;
 }
 
-// Checkout
+// Complete checkout (pretend)
 function checkout() {
-  const name = (document.getElementById('cc-name').value || '').trim();
-  const num = (document.getElementById('cc-num').value || '').replace(/\s/g, '');
-  const exp = (document.getElementById('cc-exp').value || '').trim();
-  const cvv = (document.getElementById('cc-cvv').value || '').trim();
+  const name = (getEl('cc-name')?.value || '').trim();
+  const num = (getEl('cc-num')?.value || '').replace(/\s/g, '');
+  const exp = (getEl('cc-exp')?.value || '').trim();
+  const cvv = (getEl('cc-cvv')?.value || '').trim();
 
   if (!name || num.length < 12 || exp.length < 4 || cvv.length < 3) {
     showToast('Please fill in all the card boxes (any pretend numbers are fine).');
@@ -198,10 +247,12 @@ function checkout() {
   const total = cartTotal();
   const firstName = name.split(' ')[0];
 
-  // Save order to localStorage
   saveOrder(name, cart, total);
 
-  for (const k in cart) delete cart[k];
+  // Clear cart
+  Object.keys(cart).forEach(k => {
+    delete cart[k];
+  });
   updateBadge();
 
   document.getElementById('modal-title').textContent = 'All done!';
@@ -229,17 +280,27 @@ function checkout() {
 
 // Save order to localStorage for admin panel
 function saveOrder(customerName, orderCart, total) {
-  const orders = JSON.parse(localStorage.getItem('squishOrders') || '[]');
+  const raw = localStorage.getItem('squishOrders') || '[]';
+  let orders;
+
+  try {
+    orders = JSON.parse(raw);
+    if (!Array.isArray(orders)) {
+      orders = [];
+    }
+  } catch {
+    orders = [];
+  }
 
   const order = {
     id: Date.now(),
-    customerName: customerName,
+    customerName,
     items: Object.keys(orderCart).map(i => ({
       name: squishes[i].name,
       quantity: orderCart[i],
       price: squishes[i].price
     })),
-    total: total,
+    total,
     date: new Date().toISOString(),
     status: 'pending'
   };
@@ -248,53 +309,82 @@ function saveOrder(customerName, orderCart, total) {
   localStorage.setItem('squishOrders', JSON.stringify(orders));
 }
 
-// Custom request form
+// ----------------------
+// Custom squish requests
+// ----------------------
 function sendCustom() {
-  const name = (document.getElementById('c-name').value || '').trim();
-  const idea = (document.getElementById('c-idea').value || '').trim();
+  const nameEl = getEl('c-name');
+  const contactEl = getEl('c-contact');
+  const colorsEl = getEl('c-colors');
+  const sizeEl = getEl('c-size');
+  const ideaEl = getEl('c-idea');
+
+  if (!nameEl || !ideaEl) {
+    return;
+  }
+
+  const name = (nameEl.value || '').trim();
+  const idea = (ideaEl.value || '').trim();
 
   if (!name || !idea) {
     showToast('Please add your name and your idea so I know what to make!');
     return;
   }
 
-  document.getElementById('c-name').value = '';
-  document.getElementById('c-contact').value = '';
-  document.getElementById('c-colors').value = '';
-  document.getElementById('c-size').value = '';
-  document.getElementById('c-idea').value = '';
+  // Clear fields
+  nameEl.value = '';
+  if (contactEl) contactEl.value = '';
+  if (colorsEl) colorsEl.value = '';
+  if (sizeEl) sizeEl.value = '';
+  ideaEl.value = '';
 
   showToast(`Thanks ${name.split(' ')[0]}! Your custom Squish request was sent.`);
 }
 
-// Event listeners
+// ----------------------
+// Global event listeners
+// ----------------------
 document.addEventListener('click', (e) => {
-  const poke = e.target.closest('[data-poke]');
+  const poke = e.target.closest?.('[data-poke]');
   if (poke) {
     poke.classList.remove('squishing');
+    // restart animation
     void poke.offsetWidth;
     poke.classList.add('squishing');
   }
 
-  const add = e.target.closest('[data-add]');
-  if (add) addToCart(parseInt(add.dataset.add, 10));
+  const add = e.target.closest?.('[data-add]');
+  if (add) {
+    const index = parseInt(add.dataset.add, 10);
+    if (!Number.isNaN(index)) {
+      addToCart(index);
+    }
+  }
 });
 
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closeCart();
+  if (e.key === 'Escape') {
+    closeCart();
+  }
 });
 
-// Toast notification
+// ----------------------
+// Toast notifications
+// ----------------------
 let toastTimer;
 function showToast(msg) {
-  const t = document.getElementById('toast');
+  const t = getEl('toast');
+  if (!t) return;
+
   t.textContent = msg;
   t.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
 }
 
-// Initialize
+// ----------------------
+// Page initialization
+// ----------------------
 document.addEventListener('DOMContentLoaded', () => {
   buildShop();
   updateBadge();
