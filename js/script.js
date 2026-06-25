@@ -205,7 +205,8 @@ function checkout() {
   updateBadge();
 
   document.getElementById('modal-title').textContent = 'All done!';
-  document.getElementById('modal-body').innerHTML = `
+  const modalBody = document.getElementById('modal-body');
+  modalBody.innerHTML = `
     <div class="success">
       <svg viewBox="0 0 200 200" aria-hidden="true">
         <ellipse cx="100" cy="178" rx="70" ry="11" fill="#B79CED" opacity="0.22"/>
@@ -217,11 +218,13 @@ function checkout() {
         <path d="M70 132 q40 24 78 6" fill="none" stroke="#F2B83E" stroke-width="6" stroke-linecap="round"/>
         <path d="M150 30 l5 12 13 1 -10 9 3 13 -11 -7 -11 7 3 -13 -10 -9 13 -1 z" fill="#B79CED"/>
       </svg>
-      <h2>Thank you, ${firstName}!</h2>
-      <p>Your order for $${total} is placed. Your Squishes are on the way (pretend)!</p>
+      <h2 id="success-thankyou"></h2>
+      <p id="success-message"></p>
       <button class="btn btn-main" onclick="closeCart()">Yay!</button>
     </div>
   `;
+  document.getElementById('success-thankyou').textContent = `Thank you, ${firstName}!`;
+  document.getElementById('success-message').textContent = `Your order for $${total} is placed. Your Squishes are on the way (pretend)!`;
 }
 
 // Save order to localStorage for admin panel
