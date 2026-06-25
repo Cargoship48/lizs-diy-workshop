@@ -235,6 +235,15 @@
       return orders.sort((a, b) => b.id - a.id); // Newest first
     }
 
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
     function updateStats() {
       const orders = loadOrders();
       const pendingOrders = orders.filter(o => o.status === 'pending');
@@ -253,30 +262,32 @@
         : 'None yet';
 
       const statsGrid = document.getElementById('stats-grid');
-      statsGrid.innerHTML = '';
+      statsGrid.textContent = '';
 
-      const makeStatCard = (valueText, labelText, extraValueStyles = {}) => {
+      const stats = [
+        { value: String(orders.length), label: 'Total Orders' },
+        { value: String(pendingOrders.length), label: 'Pending Orders' },
+        { value: '$' + String(totalSales), label: 'Total Sales' },
+        { value: String(mostPopular), label: 'Most Popular', large: true }
+      ];
+
+      stats.forEach(stat => {
         const card = document.createElement('div');
         card.className = 'stat-card';
 
-        const value = document.createElement('div');
-        value.className = 'stat-value';
-        value.textContent = valueText;
-        Object.assign(value.style, extraValueStyles);
+        const valueEl = document.createElement('div');
+        valueEl.className = 'stat-value';
+        if (stat.large) valueEl.style.fontSize = '1.3rem';
+        valueEl.textContent = stat.value;
 
-        const label = document.createElement('div');
-        label.className = 'stat-label';
-        label.textContent = labelText;
+        const labelEl = document.createElement('div');
+        labelEl.className = 'stat-label';
+        labelEl.textContent = stat.label;
 
-        card.appendChild(value);
-        card.appendChild(label);
+        card.appendChild(valueEl);
+        card.appendChild(labelEl);
         statsGrid.appendChild(card);
-      };
-
-      makeStatCard(String(orders.length), 'Total Orders');
-      makeStatCard(String(pendingOrders.length), 'Pending Orders');
-      makeStatCard(`$${totalSales}`, 'Total Sales');
-      makeStatCard(mostPopular, 'Most Popular', { fontSize: '1.3rem' });
+      });
     }
 
     function renderOrders() {
@@ -304,96 +315,47 @@
 
       orders.forEach(order => {
         const date = new Date(order.date);
-        const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        const dateStr = escapeHtml(date.toLocaleDateString() + ' ' + date.toLocaleTimeString());
+        const safeStatus = order.status === 'fulfilled' ? 'fulfilled' : 'pending';
+        const safeOrderId = Number(order.id) || 0;
+        const safeCustomerName = escapeHtml(order.customerName);
+        const safeTotal = escapeHtml(order.total);
 
-        const card = document.createElement('div');
-        card.className = `order-card ${order.status}`;
+        const itemsList = order.items.map(item => `
+          <div class="order-item">
+            <span>${escapeHtml(item.quantity)}x ${escapeHtml(item.name)}</span>
+            <span>$${escapeHtml(item.price * item.quantity)}</span>
+          </div>
+        `).join('');
 
-        const header = document.createElement('div');
-        header.className = 'order-header';
+        return `
+          <div class="order-card ${safeStatus}">
+            <div class="order-header">
+              <div class="order-info">
+                <h3>${safeCustomerName}</h3>
+                <div class="order-meta">Order #${safeOrderId} • ${dateStr}</div>
+              </div>
+              <span class="order-status ${safeStatus}">${safeStatus}</span>
+            </div>
 
-        const info = document.createElement('div');
-        info.className = 'order-info';
+            <div class="order-items">
+              ${itemsList}
+              <div class="order-total">
+                <span>Total</span>
+                <span>$${safeTotal}</span>
+              </div>
+            </div>
 
-        const title = document.createElement('h3');
-        title.textContent = order.customerName;
-
-        const meta = document.createElement('div');
-        meta.className = 'order-meta';
-        meta.textContent = `Order #${order.id} • ${dateStr}`;
-
-        info.appendChild(title);
-        info.appendChild(meta);
-
-        const statusSpan = document.createElement('span');
-        statusSpan.className = `order-status ${order.status}`;
-        statusSpan.textContent = order.status;
-
-        header.appendChild(info);
-        header.appendChild(statusSpan);
-
-        const itemsContainer = document.createElement('div');
-        itemsContainer.className = 'order-items';
-
-        order.items.forEach(item => {
-          const row = document.createElement('div');
-          row.className = 'order-item';
-
-          const left = document.createElement('span');
-          left.textContent = `${item.quantity}x ${item.name}`;
-
-          const right = document.createElement('span');
-          right.textContent = `$${item.price * item.quantity}`;
-
-          row.appendChild(left);
-          row.appendChild(right);
-          itemsContainer.appendChild(row);
-        });
-
-        const totalRow = document.createElement('div');
-        totalRow.className = 'order-total';
-
-        const totalLabel = document.createElement('span');
-        totalLabel.textContent = 'Total';
-
-        const totalValue = document.createElement('span');
-        totalValue.textContent = `$${order.total}`;
-
-        totalRow.appendChild(totalLabel);
-        totalRow.appendChild(totalValue);
-        itemsContainer.appendChild(totalRow);
-
-        const actions = document.createElement('div');
-        actions.className = 'order-actions';
-
-        const toggleBtn = document.createElement('button');
-        toggleBtn.className = `btn btn-small ${
-          order.status === 'pending' ? 'btn-main' : 'btn-ghost'
-        }`;
-        toggleBtn.textContent =
-          order.status === 'pending' ? 'Mark as Fulfilled' : 'Mark as Pending';
-        toggleBtn.addEventListener('click', () => {
-          if (order.status === 'pending') {
-            markFulfilled(order.id);
-          } else {
-            markPending(order.id);
-          }
-        });
-
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'btn btn-ghost btn-small';
-        deleteBtn.textContent = 'Delete';
-        deleteBtn.addEventListener('click', () => deleteOrder(order.id));
-
-        actions.appendChild(toggleBtn);
-        actions.appendChild(deleteBtn);
-
-        card.appendChild(header);
-        card.appendChild(itemsContainer);
-        card.appendChild(actions);
-
-        container.appendChild(card);
-      });
+            <div class="order-actions">
+              ${safeStatus === 'pending'
+                ? `<button class="btn btn-main btn-small" onclick="markFulfilled(${safeOrderId})">Mark as Fulfilled</button>`
+                : `<button class="btn btn-ghost btn-small" onclick="markPending(${safeOrderId})">Mark as Pending</button>`
+              }
+              <button class="btn btn-ghost btn-small" onclick="deleteOrder(${safeOrderId})">Delete</button>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
     function markFulfilled(orderId) {

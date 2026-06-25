@@ -255,14 +255,9 @@ function checkout() {
   });
   updateBadge();
 
-  const titleEl = getEl('modal-title');
-  if (titleEl) {
-    titleEl.textContent = 'All done!';
-  }
-
-  const body = getEl('modal-body');
-  if (!body) return;
-  body.innerHTML = `
+  document.getElementById('modal-title').textContent = 'All done!';
+  const modalBody = document.getElementById('modal-body');
+  modalBody.innerHTML = `
     <div class="success">
       <svg viewBox="0 0 200 200" aria-hidden="true">
         <ellipse cx="100" cy="178" rx="70" ry="11" fill="#B79CED" opacity="0.22"/>
@@ -274,25 +269,13 @@ function checkout() {
         <path d="M70 132 q40 24 78 6" fill="none" stroke="#F2B83E" stroke-width="6" stroke-linecap="round"/>
         <path d="M150 30 l5 12 13 1 -10 9 3 13 -11 -7 -11 7 3 -13 -10 -9 13 -1 z" fill="#B79CED"/>
       </svg>
-      <h2 class="success-title"></h2>
-      <p class="success-text"></p>
-      <button class="btn btn-main">Yay!</button>
+      <h2 id="success-thankyou"></h2>
+      <p id="success-message"></p>
+      <button class="btn btn-main" onclick="closeCart()">Yay!</button>
     </div>
   `;
-
-  const successTitle = body.querySelector('.success-title');
-  const successText = body.querySelector('.success-text');
-  const yayBtn = body.querySelector('button.btn-main');
-
-  if (successTitle) {
-    successTitle.textContent = `Thank you, ${firstName}!`;
-  }
-  if (successText) {
-    successText.textContent = `Your order for $${total} is placed. Your Squishes are on the way (pretend)!`;
-  }
-  if (yayBtn) {
-    yayBtn.addEventListener('click', () => closeCart());
-  }
+  document.getElementById('success-thankyou').textContent = `Thank you, ${firstName}!`;
+  document.getElementById('success-message').textContent = `Your order for $${total} is placed. Your Squishes are on the way (pretend)!`;
 }
 
 // Save order to localStorage for admin panel
