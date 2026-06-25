@@ -252,24 +252,33 @@
         ? Object.entries(squishCount).sort((a, b) => b[1] - a[1])[0][0]
         : 'None yet';
 
-      document.getElementById('stats-grid').innerHTML = `
-        <div class="stat-card">
-          <div class="stat-value">${orders.length}</div>
-          <div class="stat-label">Total Orders</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value">${pendingOrders.length}</div>
-          <div class="stat-label">Pending Orders</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value">$${totalSales}</div>
-          <div class="stat-label">Total Sales</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" style="font-size: 1.3rem;">${mostPopular}</div>
-          <div class="stat-label">Most Popular</div>
-        </div>
-      `;
+      const statsGrid = document.getElementById('stats-grid');
+      statsGrid.textContent = '';
+
+      const stats = [
+        { value: String(orders.length), label: 'Total Orders' },
+        { value: String(pendingOrders.length), label: 'Pending Orders' },
+        { value: '$' + String(totalSales), label: 'Total Sales' },
+        { value: String(mostPopular), label: 'Most Popular', large: true }
+      ];
+
+      stats.forEach(stat => {
+        const card = document.createElement('div');
+        card.className = 'stat-card';
+
+        const valueEl = document.createElement('div');
+        valueEl.className = 'stat-value';
+        if (stat.large) valueEl.style.fontSize = '1.3rem';
+        valueEl.textContent = stat.value;
+
+        const labelEl = document.createElement('div');
+        labelEl.className = 'stat-label';
+        labelEl.textContent = stat.label;
+
+        card.appendChild(valueEl);
+        card.appendChild(labelEl);
+        statsGrid.appendChild(card);
+      });
     }
 
     function renderOrders() {
