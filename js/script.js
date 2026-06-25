@@ -262,7 +262,6 @@ function checkout() {
 
   const body = getEl('modal-body');
   if (!body) return;
-
   body.innerHTML = `
     <div class="success">
       <svg viewBox="0 0 200 200" aria-hidden="true">
@@ -275,11 +274,25 @@ function checkout() {
         <path d="M70 132 q40 24 78 6" fill="none" stroke="#F2B83E" stroke-width="6" stroke-linecap="round"/>
         <path d="M150 30 l5 12 13 1 -10 9 3 13 -11 -7 -11 7 3 -13 -10 -9 13 -1 z" fill="#B79CED"/>
       </svg>
-      <h2>Thank you, ${firstName}!</h2>
-      <p>Your order for $${total} is placed. Your Squishes are on the way (pretend)!</p>
-      <button class="btn btn-main" onclick="closeCart()">Yay!</button>
+      <h2 class="success-title"></h2>
+      <p class="success-text"></p>
+      <button class="btn btn-main">Yay!</button>
     </div>
   `;
+
+  const successTitle = body.querySelector('.success-title');
+  const successText = body.querySelector('.success-text');
+  const yayBtn = body.querySelector('button.btn-main');
+
+  if (successTitle) {
+    successTitle.textContent = `Thank you, ${firstName}!`;
+  }
+  if (successText) {
+    successText.textContent = `Your order for $${total} is placed. Your Squishes are on the way (pretend)!`;
+  }
+  if (yayBtn) {
+    yayBtn.addEventListener('click', () => closeCart());
+  }
 }
 
 // Save order to localStorage for admin panel
